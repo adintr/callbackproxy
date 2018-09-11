@@ -2,6 +2,7 @@ var cb = require("./callbackproxy.js");
 
 var proxy = cb();
 
+// 测试常规用法
 setTimeout(proxy.first, 1000);
 
 proxy.first = function() {
@@ -23,18 +24,11 @@ proxy.forth = function() {
 	console.log(4);
 }
 
+// 测试回调函数定义在回调发生之后
 
-/*
+proxy.hello([1, 2, 3]);
 setTimeout(function(){
-	console.log(1);
-	setTimeout(function(){
-		console.log(2);
-		setTimeout(function(){
-			console.log(3);			
-			setTimeout(function(){
-				console.log(4);				
-			}, 4000);
-		}, 3000)
-	}, 2000);
-}, 1000);
-*/
+	proxy.hello = function(arg) {
+		console.log(arg);
+	}	
+}, 500);
