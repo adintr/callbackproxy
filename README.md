@@ -43,3 +43,73 @@ proxy.forth = function() {
 	console.log(4);
 }
 ```
+
+#### 2. 对于按顺序执行的回调也可以简化成这样:
+```
+var proxy = require("./callbackproxy.js")();
+setTimeout(proxy.next, 1000);
+
+proxy.next = [
+	()=>{
+		console.log(1);
+		setTimeout(proxy.next, 1000);
+	},
+
+	()=>{
+		console.log(2);
+		setTimeout(proxy.next, 1000);
+	},
+
+	()=>{
+		console.log(3);
+		setTimeout(proxy.next, 1000);
+	},
+
+	()=>{
+		console.log(4);
+	},
+];
+```
+#### 3. 用带 _ 的属性会返回一个包含了方法的代理对象, 支持的方法包括 push, every, all, oneof. 其中 push 允许一步一步的添加方法, 而不用设置整个数组, 上面的回调也可以写成:
+```
+var proxy = require("./callbackproxy.js")();
+
+setTimeout(proxy.next, 1000);
+
+for(var i = 0; i < 10; ++i) {
+	proxy._next.push(function(){
+		console.log('*');
+		setTimeout(proxy.next, 1000);
+	})
+}
+```
+
+#### 4. 如果回调使用相同的函数处理, 则可以使用 every 方法:
+```
+proxy._another.every(function(){
+	console.log("+");
+	setTimeout(proxy.another, 1000);
+});
+
+proxy.another();
+```
+
+#### 5. 用 all 设置的函数会等待回调指定的次数后才执行, 使用 oneof 设置的函数会在第一个回调发生的时候执行. 使用 _ 函数可以同时触发多个回调函数:
+```
+var proxy = require("./callbackproxy.js")();
+
+setTimeout(proxy._('next', 'another'), 1000);
+setTimeout(proxy._('next', 'another'), 2000);
+setTimeout(proxy._('next', 'another'), 3000);
+setTimeout(proxy._('next', 'another'), 4000);
+setTimeout(proxy._('next', 'another'), 5000);
+
+proxy._next.all(function(){
+	console.log("All Done.");
+});
+
+proxy._another.oneof(function(){
+	console.log("One Done.");
+});
+```
+
